@@ -62,3 +62,73 @@ aws-security-automation-<module>/
 ├── outputs/        # Versioned execution outputs (immutable)
 ├── lib/            # Shared helpers (CLI, AWS clients, writers, validators)
 └── docs/           # Documentation, diagrams, and guides
+
+Output Strategy
+
+All executions generate immutable, timestamped outputs:
+
+Outputs are never overwritten
+
+Each execution is independently auditable
+
+Machine-readable by default
+
+Recommended formats include:
+
+JSON — source of truth
+
+CSV — analytics and Athena queries
+
+Markdown — human-readable summaries
+
+Outputs are designed to integrate with Athena, CI/CD pipelines, SIEM/SOAR platforms, and audit workflows.
+
+How This Template Is Used
+
+Click Use this template on GitHub
+
+Create a new repository for a specific security domain
+
+Implement logic under:
+
+scanner/
+
+remediate/
+
+lab_insecure/
+
+Keep the execution contract and output structure intact
+
+Each module is self-contained, but all modules behave consistently.
+
+Reference Implementations
+
+The following repositories were created using this foundation and demonstrate how the template is applied in real security automation projects:
+
+Security Hub as Control Plane
+https://github.com/wagnermazevedo/AWS-Security-Scripts-Security-Control-Plane
+
+IAM & Identity as Control Plane
+https://github.com/wagnermazevedo/IAM-Identity-as-Control-Planev
+
+Next Releases
+
+This foundation enables future security automation modules, including:
+
+Security Hub as Control Plane
+
+IAM & Identity as Control Plane
+
+Network and data security automation
+
+Identity, permission, and governance guardrails
+
+Each release is implemented as an independent repository built from this same template.
+
+
+
+Final Note
+
+This foundation intentionally favors boring structure and strict discipline.
+
+That discipline is what allows security automation to be safe, scalable, and enterprise-ready.
