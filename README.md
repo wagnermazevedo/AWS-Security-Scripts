@@ -62,6 +62,9 @@ aws-security-automation-<module>/
 ├── outputs/        # Versioned execution outputs (immutable)
 ├── lib/            # Shared helpers (CLI, AWS clients, writers, validators)
 └── docs/           # Documentation, diagrams, and guides
+
+
+**standardization.**
 Output Strategy
 All executions generate immutable, timestamped outputs:
 
@@ -124,3 +127,5 @@ Final Note
 This foundation intentionally favors boring structure and strict discipline.
 
 That discipline is what allows security automation to be safe, scalable, and enterprise-ready.
+
+---
