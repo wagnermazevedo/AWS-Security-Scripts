@@ -1,169 +1,115 @@
-AWS Security Automation — Foundation / Bootstrap
+AWS Security Automation — Foundation / Bootstrap (Template)
 Overview
 
 Before scanning and fixing security issues, there is a more fundamental problem to solve:
 
 standardization.
 
-Security automation often starts as a set of isolated scripts — each with its own execution model, output format, and assumptions. Over time, this leads to fragile tooling, limited auditability, and poor scalability.
+This repository defines a shared foundation for AWS security automation, providing a consistent execution model, versioned outputs, and a reusable repository structure for scanners and remediation scripts.
 
-This repository defines a shared foundation and reference model for AWS security automation.
+Important: this is a GitHub template.
+Each security automation module is created as its own repository using this template, and each repository contains the full directory structure inside itself.
 
-It does not centralize all scanners and remediations in a single codebase.
-Instead, it establishes a repeatable project template that is implemented inside each security automation repository.
-
-Without a common foundation, automation becomes difficult to govern and unsafe to scale.
-This project turns individual scripts into cohesive, auditable, and enterprise-ready security automation projects.
-
-This is Release 0 — the base layer for all upcoming security automation releases.
-
-Design Principles
-
-This foundation is built on the following principles:
-
-Consistency over convenience
-
-Auditability by default
-
-Clear separation between detection and mutation
-
-Dry-run first, apply explicitly
-
-Evidence-first automation
-
-Security at scale starts with discipline.
+Without a common foundation, security automation quickly becomes a collection of disconnected scripts.
+This project turns those scripts into a cohesive, auditable framework.
 
 Project Goals
 
 This foundational release focuses on:
 
-Defining a standard project layout to be reused across repositories
+Establishing a single execution contract for all scripts
 
-Establishing a single execution contract for all security scripts
-
-Enforcing clear separation of concerns:
-
-Scan (detect)
-
-Plan (optional, non-mutating)
-
-Remediate (state-changing)
-
-Producing versioned, timestamped outputs for every execution
+Producing versioned, auditable outputs
 
 Enabling reuse across:
 
-Multi-account AWS Organizations
+Multi-account environments
 
 CI/CD pipelines
 
-Athena-based reporting
+Athena and reporting workflows
 
-Remediation-as-Code workflows
+Remediation-as-Code
 
-Creating a scalable and composable base for future security automation modules
+Creating a scalable base for future security automation releases
 
-This repository is the cornerstone template of the entire series.
+This is the cornerstone of the entire series.
 
-Execution Model (Contract)
+Execution Contract (Scan / Plan / Remediate)
 
-Every security automation project that adopts this foundation follows the same execution contract:
+All projects created from this template follow the same contract:
 
-Scanner
+Scan (read-only)
+Produces findings and evidence. Never mutates state.
 
-Read-only
+Plan (optional, non-mutating)
+Transforms findings into proposed actions (preview of impact and changes).
 
-No state mutation
+Remediate (state-changing, controlled)
+Applies changes explicitly and supports dry-run.
+Produces remediation evidence (planned vs applied).
 
-Produces structured, machine-readable output
+Key rule: no remediation happens accidentally — even remediation supports dry-run first.
 
-Planner (optional)
+Repository Structure
 
-Transforms findings into proposed actions
-
-Always non-mutating
-
-Used to preview impact and decision paths
-
-Remediator
-
-Applies changes explicitly
-
-Supports dry-run execution
-
-Requires explicit confirmation or flags to enforce changes
-
-Produces remediation evidence (planned vs applied)
-
-This model guarantees that no change happens accidentally, even at the remediation stage.
-
-Standard Project Structure (Replicated per Repository)
-
-Each security automation module (for example: Security Hub, IAM & Identity, Network, Data) is implemented as an independent repository.
-
-Each repository replicates the same internal structure defined by this foundation:
+Every repository created from this template includes this structure inside the repository itself:
 
 aws-security-automation-<module>/
-├── scanner/          # Detection scripts (read-only)
-├── remediate/        # Remediation scripts (supports dry-run and apply)
-├── lab_insecure/     # Intentionally insecure resources for validation
-├── outputs/          # Versioned, immutable execution outputs
-│   ├── scanner/
-│   │   └── YYYY/MM/DD/
-│   ├── plan/
-│   │   └── YYYY/MM/DD/
-│   └── remediate/
-│       └── YYYY/MM/DD/
-├── reports/          # Aggregated and human-readable reports
-├── lib/              # Shared helpers (CLI, AWS clients, writers, validators)
-├── docs/             # Module-specific documentation and diagrams
-└── README.md
-
-
-This guarantees that every module looks, behaves, and reports in the same way, regardless of the security domain.
+├── scanner/        # Detection scripts (read-only)
+├── remediate/      # Remediation and correction scripts (supports dry-run)
+├── lab_insecure/   # Intentionally insecure resources for testing
+├── reports/        # Consolidated reports and summaries
+├── outputs/        # Versioned execution outputs (immutable)
+├── lib/            # Shared helpers (CLI, AWS clients, writers, validators)
+└── docs/           # Documentation, diagrams, and guides
 
 Output Strategy
 
-Every execution generates immutable, timestamped outputs inside the project repository:
+All executions generate immutable, timestamped outputs:
 
-Outputs are never overwritten
+Never overwritten
 
-Each run is independently auditable
+Always traceable
 
-Data is safe for forensics and compliance reviews
+Machine-readable by default
 
-Primary output formats:
+Recommended formats:
 
 JSON (source of truth)
 
-CSV (analytics and Athena)
+CSV (analytics / Athena)
 
 Markdown (human-readable summaries)
 
-Outputs are designed to integrate naturally with:
+Outputs are designed to be consumed by Athena, CI/CD pipelines, SIEM/SOAR, and audit workflows.
 
-Amazon Athena
+How to Use This as a GitHub Template
 
-SIEM / SOAR platforms
+Click Use this template on GitHub
 
-CI/CD pipelines
+Create a new repository named, for example:
 
-Governance, risk, and compliance tooling
+aws-security-automation-securityhub-control-plane
 
-What Comes Next
+aws-security-automation-iam-control-plane
 
-With this foundation in place, future releases become predictable and composable:
+Implement module logic under:
+
+scanner/
+
+remediate/
+
+lab_insecure/
+
+Keep the execution contract and outputs consistent
+
+Next Releases Built on This Foundation
+
+Planned modules include:
 
 Security Hub as Control Plane
 
 IAM & Identity as Control Plane
 
-Network, Data, and Application Security Modules
-
-Each release is a self-contained repository that inherits this foundation — no divergence, no reinvention.
-
-Final Note
-
-This foundation intentionally favors boring structure and strict discipline.
-
-That discipline is what makes security automation safe, scalable, and enterprise-ready.
+Each one becomes its own repository, created from this template, inheriting the same structure and execution contract.
