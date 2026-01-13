@@ -62,7 +62,7 @@ aws-security-automation-<module>/
 ├── outputs/        # Versioned execution outputs (immutable)
 ├── lib/            # Shared helpers (CLI, AWS clients, writers, validators)
 └── docs/           # Documentation, diagrams, and guides
-
+```text
 ## Output Strategy
 
 All executions generate **immutable, timestamped outputs**:
