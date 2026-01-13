@@ -81,17 +81,43 @@ Each module is **self-contained**, but all modules **behave consistently**.
 
 ---
 
-## Reference Implementations
+## **Reference Implementations**
 
 The following repositories were created using this foundation and demonstrate how the template is applied in real security automation projects:
 
 - **Security Hub as Control Plane**  
-  https://github.com/wagnermazevedo/AWS-Security-Scripts-Security-Control-Plane
+  https://github.com/wagnermazevedo/Security-Control-Plane *(planned)*
 
 - **IAM & Identity as Control Plane**  
-  https://github.com/wagnermazevedo/IAM-Identity-as-Control-Plane
+  https://github.com/wagnermazevedo/IAM-Identity-as-Control-Plane  *(planned)*
+  **(Includes CIEM / Privilege Management capabilities)**
+
+- **AWS Governance as Control Plane**  
+  https://github.com/wagnermazevedo/AWS-Governance-Control-Plane *(planned)*
+
+- **CloudFront, ALB & WAF as Control Plane**  
+  https://github.com/wagnermazevedo/Edge-Security-Control-Plane *(planned)*
+
+- **PaaS & Managed Services Permissions Control Plane**  
+  *(CodeBuild, CodeDeploy, SageMaker, RDS)*  
+  https://github.com/wagnermazevedo/PaaS-Permissions-Control-Plane *(planned)*
+
+- **Network Traffic & Security Policy Analysis Control Plane**  
+  *(VPC routing, Security Groups, NACLs, exposed ports)*  
+  https://github.com/wagnermazevedo/Network-Security-Control-Plane *(planned)*
+
+- **Leaked Credentials & Exposure Monitoring Control Plane**  
+  *(HIBP, dark web sources, access key validation & remediation)*  
+  https://github.com/wagnermazevedo/Credential-Exposure-Control-Plane *(planned)*
 
 ---
+
+### **Strategic Note**
+Each repository:
+- follows the same **execution contract** (**scan → plan → remediate**)
+- produces **versioned outputs**
+- can be used **independently** or as part of a **unified Security Control Plane ecosystem**
+-
 
 ## Next Releases
 
