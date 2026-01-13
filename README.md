@@ -1,4 +1,4 @@
-# AWS Security Automation — Foundation / Bootstrap (Template) Overview
+# AWS Security Automation — Foundation / Bootstrap
 
 Before scanning and fixing security issues, there is a more fundamental problem to solve:
 
