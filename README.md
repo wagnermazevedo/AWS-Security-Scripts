@@ -113,3 +113,6 @@ Security Hub as Control Plane
 IAM & Identity as Control Plane
 
 Each one becomes its own repository, created from this template, inheriting the same structure and execution contract.
+
+> This repository is a GitHub template.  
+> Each security automation module is created as its own repository using this template, and each repository contains the full directory structure inside itself.
