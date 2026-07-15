@@ -106,7 +106,7 @@ The following repositories were created using this foundation and demonstrate ho
   *(VPC routing, Security Groups, NACLs, exposed ports)*  
   https://github.com/wagnermazevedo/Network-Security-Control-Plane *(planned)*
 
-- **Leaked Credentials & Exposure Monitoring Control Plane**  
+- **Credentials & Exposure Monitoring Control Plane**  
   *(HIBP, dark web sources, access key validation & remediation)*  
   https://github.com/wagnermazevedo/Credential-Exposure-Control-Plane *(planned)*
 
