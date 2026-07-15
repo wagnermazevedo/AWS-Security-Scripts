@@ -95,8 +95,8 @@ The following repositories were created using this foundation and demonstrate ho
 - **AWS Governance as Control Plane**  
   https://github.com/wagnermazevedo/AWS-Governance-Control-Plane *(planned)*
 
-- **CloudFront, ALB & WAF as Control Plane**  
-  https://github.com/wagnermazevedo/Edge-Security-Control-Plane *(planned)*
+- **Software Defined Perimeter as Control Plane**  
+  https://github.com/wagnermazevedo/Software-Defined-Perimeter-as-Control-Plane *(planned)*
 
 - **PaaS & Managed Services Permissions Control Plane**  
   *(CodeBuild, CodeDeploy, SageMaker, RDS)*  
