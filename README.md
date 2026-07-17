@@ -88,12 +88,12 @@ The following repositories were created using this foundation and demonstrate ho
 - **Security Hub as Control Plane**  
   https://github.com/wagnermazevedo/Security-Control-Plane *(planned)*
 
+- **AWS Governance as Control Plane**  
+  https://github.com/wagnermazevedo/AWS-Governance-Control-Plane *(planned)*
+
 - **IAM & Identity as Control Plane**  
   https://github.com/wagnermazevedo/IAM-Identity-as-Control-Plane  *(planned)*
   **(Includes CIEM / Privilege Management capabilities)**
-
-- **AWS Governance as Control Plane**  
-  https://github.com/wagnermazevedo/AWS-Governance-Control-Plane *(planned)*
 
 - **Software Defined Perimeter as Control Plane**  
   https://github.com/wagnermazevedo/Software-Defined-Perimeter-as-Control-Plane *(planned)*
