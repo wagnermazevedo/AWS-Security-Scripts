@@ -124,7 +124,7 @@ Each repository:
 This foundation enables future security automation modules, including:
 
 - **Security Hub as Control Plane**
-- **IAM & Identity as Control Plane**
+- **AWS Governance as Control Plane**
 - Network and data security automation
 - Identity, permission, and governance guardrails
 
