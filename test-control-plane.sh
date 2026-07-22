@@ -116,6 +116,77 @@ get_all_repos() {
     echo "${found_repos[@]}"
 }
 
+# ===================================================
+# Execuções Individuais de Estágios
+# ===================================================
+
+exec_scan() {
+    local repo_dir="$1"
+    local scan_script=$(find_stage_script "$repo_dir" "00")
+    echo -e "\n[1/3] Executando SCAN usando: $(basename "$scan_script")..."
+    
+    PYTHONPATH="$repo_dir" python3 "$scan_script" --region "$AWS_REGION" --output-dir "$BASE_DIR/outputs"
+    local ret_code=$?
+
+    if [ $ret_code -eq 0 ]; then
+        local input_yaml=$(ls -1td "$BASE_DIR/outputs"/202*/*.yaml "$repo_dir"/outputs/202*/*.yaml ./202*/*.yaml 2>/dev/null | head -n 1)
+        if [ -n "$input_yaml" ]; then
+            anonimize_file "$input_yaml"
+            echo "-> Artefato de entrada preparado e mascarado: $input_yaml"
+        fi
+    else
+        echo "❌ Erro na execução do Scan."
+        exit 1
+    fi
+}
+
+exec_plan() {
+    local repo_dir="$1"
+    local plan_script=$(find_stage_script "$repo_dir" "01")
+    local rules_file=$(find_rules_file "$repo_dir")
+    local plan_output="$BASE_DIR/remediation_plan.yaml"
+    local input_yaml=$(ls -1td "$BASE_DIR/outputs"/202*/*.yaml "$repo_dir"/outputs/202*/*.yaml ./202*/*.yaml 2>/dev/null | head -n 1)
+
+    if [ -z "$input_yaml" ]; then
+        echo "❌ Erro: Nenhum arquivo YAML de scan anterior foi encontrado. Execute 'scan' primeiro."
+        exit 1
+    fi
+
+    echo -e "\n[2/3] Executando PLAN usando: $(basename "$plan_script")..."
+    if [ -n "$rules_file" ]; then
+        PYTHONPATH="$repo_dir" python3 "$plan_script" --input-yaml "$input_yaml" --rules "$rules_file" --output-yaml "$plan_output"
+    else
+        PYTHONPATH="$repo_dir" python3 "$plan_script" --input-yaml "$input_yaml" --output-yaml "$plan_output"
+    fi
+
+    if [ ! -f "$plan_output" ]; then
+        echo "❌ Erro: Falha ao gerar o plano de ação $plan_output"
+        exit 1
+    fi
+
+    anonimize_file "$plan_output"
+    echo "-> Plano gerado e mascarado: $plan_output"
+}
+
+exec_remediate() {
+    local repo_dir="$1"
+    local mode="$2"
+    local remediate_script=$(find_stage_script "$repo_dir" "02")
+    local plan_output="$BASE_DIR/remediation_plan.yaml"
+
+    if [ ! -f "$plan_output" ]; then
+        echo "❌ Erro: O arquivo '$plan_output' não existe. Execute 'plan' primeiro."
+        exit 1
+    fi
+
+    echo -e "\n[3/3] Executando REMEDIATE em modo [$mode] usando: $(basename "$remediate_script")..."
+    PYTHONPATH="$repo_dir" python3 "$remediate_script" --region "$AWS_REGION" --yaml "$plan_output" --mode "$mode"
+}
+
+# ===================================================
+# Comandos Globais
+# ===================================================
+
 run_list_repos() {
     echo "===================================================="
     echo " AWS Security Control Plane: REPOSITÓRIOS DISPONÍVEIS "
@@ -166,8 +237,6 @@ run_scan_all() {
         fi
 
         echo "   -> Executando SCAN usando: $(basename "$scan_script")..."
-        
-        # Define PYTHONPATH no diretorio do repo para resolver 'from lib import ...'
         PYTHONPATH="$repo_path" python3 "$scan_script" --region "$AWS_REGION" --output-dir "$BASE_DIR/outputs"
         
         if [ $? -eq 0 ]; then
@@ -189,37 +258,27 @@ run_scan_all() {
     exit 0
 }
 
+# ===================================================
+# Roteamento Principal
+# ===================================================
+
 case "$1" in
     "list-repos") run_list_repos ;;
     "scan-all") run_scan_all ;;
 esac
 
 SELECTED_REPO="${1:-$DEFAULT_REPO}"
-REMEDIATION_MODE="${2:-dry-run}"
-
-if [[ "$REMEDIATION_MODE" != "dry-run" && "$REMEDIATION_MODE" != "apply" ]]; then
-    echo "❌ Erro: Modo de remediação inválido '$REMEDIATION_MODE'."
-    echo "Uso:"
-    echo "  $0 list-repos"
-    echo "  $0 scan-all"
-    echo "  $0 [nome_do_repo] [dry-run|apply]"
-    exit 1
-fi
+ACTION="${2:-dry-run}"
 
 REPO_DIR="$BASE_DIR/$SELECTED_REPO"
-PLAN_OUTPUT="$BASE_DIR/remediation_plan.yaml"
-REPO_DESC=$(get_repo_description "$SELECTED_REPO")
-
-echo "===================================================="
-echo " AWS Security Control Plane Automation Suite "
-echo " Repositório Alvo: $SELECTED_REPO "
-echo " Diretório Path  : $REPO_DIR "
-echo " Descrição       : $REPO_DESC "
-echo " Modo Remediação : $REMEDIATION_MODE "
-echo "===================================================="
 
 if [ ! -d "$REPO_DIR" ]; then
     echo "❌ Erro: O repositório '$REPO_DIR' não foi encontrado em $BASE_DIR."
+    echo ""
+    echo "Uso da CLI:"
+    echo "  $0 list-repos"
+    echo "  $0 scan-all"
+    echo "  $0 [NOME_REPO] [scan|plan|remediate-dry-run|remediate-apply|dry-run|apply]"
     exit 1
 fi
 
@@ -230,48 +289,57 @@ if [[ "$INTEGRITY_STATUS" != "INTEGRO" ]]; then
     exit 1
 fi
 
+REPO_DESC=$(get_repo_description "$SELECTED_REPO")
+
+echo "===================================================="
+echo " AWS Security Control Plane Automation Suite "
+echo " Repositório Alvo: $SELECTED_REPO "
+echo " Diretório Path  : $REPO_DIR "
+echo " Descrição       : $REPO_DESC "
+echo " Ação Solicitada : $ACTION "
+echo "===================================================="
+
 cd "$REPO_DIR" || exit 1
 
-RULES_FILE=$(find_rules_file "$REPO_DIR")
-
-# 1. FASE 00: SCAN
-SCAN_SCRIPT=$(find_stage_script "$REPO_DIR" "00")
-echo -e "\n[1/3] Executando SCAN usando: $(basename "$SCAN_SCRIPT")..."
-PYTHONPATH="$REPO_DIR" python3 "$SCAN_SCRIPT" --region "$AWS_REGION" --output-dir "$BASE_DIR/outputs"
-
-INPUT_YAML=$(ls -1td "$BASE_DIR/outputs"/202*/*.yaml "$REPO_DIR"/outputs/202*/*.yaml ./202*/*.yaml 2>/dev/null | head -n 1)
-
-if [ -z "$INPUT_YAML" ]; then
-    echo "❌ Erro: Nenhum arquivo YAML de scan foi gerado."
-    exit 1
-fi
-
-anonimize_file "$INPUT_YAML"
-echo "-> Artefato de entrada preparado e mascarado: $INPUT_YAML"
-
-# 2. FASE 01: PLAN
-PLAN_SCRIPT=$(find_stage_script "$REPO_DIR" "01")
-echo -e "\n[2/3] Executando PLAN usando: $(basename "$PLAN_SCRIPT")..."
-if [ -n "$RULES_FILE" ]; then
-    PYTHONPATH="$REPO_DIR" python3 "$PLAN_SCRIPT" --input-yaml "$INPUT_YAML" --rules "$RULES_FILE" --output-yaml "$PLAN_OUTPUT"
-else
-    PYTHONPATH="$REPO_DIR" python3 "$PLAN_SCRIPT" --input-yaml "$INPUT_YAML" --output-yaml "$PLAN_OUTPUT"
-fi
-
-if [ ! -f "$PLAN_OUTPUT" ]; then
-    echo "❌ Erro: Falha ao gerar o plano de ação $PLAN_OUTPUT"
-    exit 1
-fi
-
-anonimize_file "$PLAN_OUTPUT"
-
-# 3. FASE 02: REMEDIATE
-REMEDIATE_SCRIPT=$(find_stage_script "$REPO_DIR" "02")
-echo -e "\n[3/3] Executando REMEDIATE em modo [$REMEDIATION_MODE] usando: $(basename "$REMEDIATE_SCRIPT")..."
-PYTHONPATH="$REPO_DIR" python3 "$REMEDIATE_SCRIPT" --region "$AWS_REGION" --yaml "$PLAN_OUTPUT" --mode "$REMEDIATION_MODE"
+case "$ACTION" in
+    "scan")
+        exec_scan "$REPO_DIR"
+        ;;
+    "plan")
+        exec_plan "$REPO_DIR"
+        ;;
+    "remediate-dry-run")
+        exec_remediate "$REPO_DIR" "dry-run"
+        ;;
+    "remediate-apply")
+        exec_remediate "$REPO_DIR" "apply"
+        ;;
+    "dry-run")
+        exec_scan "$REPO_DIR"
+        exec_plan "$REPO_DIR"
+        exec_remediate "$REPO_DIR" "dry-run"
+        ;;
+    "apply")
+        exec_scan "$REPO_DIR"
+        exec_plan "$REPO_DIR"
+        exec_remediate "$REPO_DIR" "apply"
+        ;;
+    *)
+        echo "❌ Erro: Ação '$ACTION' não reconhecida."
+        echo ""
+        echo "Ações válidas:"
+        echo "  - scan               : Executa apenas a auditoria [00]"
+        echo "  - plan               : Executa apenas a geração do plano [01]"
+        echo "  - remediate-dry-run  : Executa apenas a simulação de remediação [02]"
+        echo "  - remediate-apply    : Executa apenas a aplicação real da remediação [02]"
+        echo "  - dry-run            : Executa o fluxo completo (Scan -> Plan -> Remediate Dry-Run)"
+        echo "  - apply              : Executa o fluxo completo (Scan -> Plan -> Remediate Apply)"
+        exit 1
+        ;;
+esac
 
 echo -e "\n===================================================="
 echo " Execução finalizada com sucesso! "
 echo " Repositório: $SELECTED_REPO "
-echo " Plano salvo em: $PLAN_OUTPUT "
+echo " Ação: $ACTION "
 echo "===================================================="
